@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Laporan Harian - Ayam Geprek KING SALMAN</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body class="min-h-screen flex flex-col bg-slate-100 text-slate-900">
+  <header class="bg-slate-900 text-white shadow-lg border-b border-slate-800">
+    <div class="max-w-7xl mx-auto px-4 py-4 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+      <div class="flex items-center gap-2.5">
+        <span class="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-emerald-500 text-slate-950 font-bold text-lg shadow">Rp</span>
+        <div>
+          <h1 class="text-xl font-bold tracking-tight">Ayam Geprek KING SALMAN</h1>
+          <p class="text-xs text-slate-400 mt-0.5">Buku Kas & Transaksi Harian</p>
+          <div class="flex flex-wrap items-center gap-2 mt-1.5">
+            <span id="liveCloudBadge" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">🟢 Cloud Real-Time</span>
+            <button type="button" onclick="forceCloudSync()" class="bg-emerald-600 hover:bg-emerald-500 text-white text-[11px] font-semibold px-2.5 py-1 rounded-full">🔄 Sinkron</button>
+          </div>
+        </div>
+      </div>
+      <div class="flex flex-wrap items-center gap-2">
+        <button type="button" onclick="exportDataFile()" class="bg-indigo-600 text-white text-xs font-semibold px-2.5 py-1.5 rounded">📥 Backup</button>
+        <label class="bg-indigo-700 text-white text-xs font-semibold px-2.5 py-1.5 rounded cursor-pointer">📤 Restore<input type="file" accept=".json" onchange="importDataFile(event)" class="hidden" /></label>
+        <input type="month" id="filterBulanGlobal" onchange="handlePeriodChange()" class="bg-slate-800 border border-slate-700 text-white text-xs rounded px-2 py-1.5" />
+        <button type="button" onclick="exportToPDF('table-harian', 'Harian')" class="bg-rose-600 text-white text-xs px-2.5 py-1.5 rounded">PDF</button>
+        <button type="button" onclick="exportToWord('table-harian', 'Harian')" class="bg-blue-600 text-white text-xs px-2.5 py-1.5 rounded">Word</button>
+        <button type="button" onclick="exportToExcel('table-harian', 'Harian')" class="bg-emerald-600 text-white text-xs px-2.5 py-1.5 rounded">Excel</button>
+      </div>
+    </div>
+    <div class="max-w-7xl mx-auto px-4 pt-2 flex gap-1 border-t border-slate-800 overflow-x-auto">
+      <a href="index.html" class="nav-link px-4 py-2.5 text-xs font-semibold rounded-t-lg text-slate-300">📊 Dashboard</a>
+      <a href="modal.html" class="nav-link px-4 py-2.5 text-xs font-semibold rounded-t-lg text-slate-300">💼 Sheet Modal</a>
+      <a href="harian.html" class="nav-link active px-4 py-2.5 text-xs font-semibold rounded-t-lg">📅 Laporan Harian</a>
+      <a href="mingguan.html" class="nav-link px-4 py-2.5 text-xs font-semibold rounded-t-lg text-slate-300">📆 Laporan Mingguan</a>
+      <a href="bulanan.html" class="nav-link px-4 py-2.5 text-xs font-semibold rounded-t-lg text-slate-300">📈 Laporan Bulanan</a>
+    </div>
+  </header>
+
+  <main class="max-w-7xl w-full mx-auto px-4 py-6 flex-1 space-y-6">
+    <div class="bg-white p-5 rounded-xl shadow-sm border">
+      <h2 id="formHarianTitle" class="text-base font-bold text-slate-800 mb-4">Formulir Input Laporan Harian & Rincian Harga</h2>
+      <form id="formHarian" onsubmit="handleSaveHarian(event)" class="space-y-4">
+        <input type="hidden" id="harianEditId" value="" />
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 items-center">
+          <div><label class="block text-xs font-semibold mb-1">Tanggal Transaksi</label><input type="date" id="harianTanggal" required class="w-full rounded border px-3 py-2 text-sm" /></div>
+          <div class="bg-emerald-50 border border-emerald-200 rounded p-3"><span class="text-[11px] font-semibold text-emerald-800 block">Total Pemasukan:</span><span id="previewTotalMasukHarian" class="text-base font-bold text-emerald-700">Rp 0</span></div>
+          <div class="bg-rose-50 border border-rose-200 rounded p-3"><span class="text-[11px] font-semibold text-rose-800 block">Total Pengeluaran:</span><span id="previewTotalKeluarHarian" class="text-base font-bold text-rose-700">Rp 0</span></div>
+        </div>
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <div class="p-4 rounded-xl bg-emerald-50/50 border border-emerald-200 space-y-3">
+            <div class="flex justify-between items-center"><h3 class="text-xs font-bold text-emerald-900 uppercase">Pemasukan / Penjualan</h3><button type="button" onclick="addIncomeItemRow()" class="bg-emerald-600 text-white text-xs px-3 py-1.5 rounded">+ Tambah</button></div>
+            <div id="incomeItemsContainer" class="space-y-2"></div>
+          </div>
+          <div class="p-4 rounded-xl bg-rose-50/50 border border-rose-200 space-y-3">
+            <div class="flex justify-between items-center"><h3 class="text-xs font-bold text-rose-900 uppercase">Pengeluaran / Belanja</h3><button type="button" onclick="addExpenseItemRow()" class="bg-rose-600 text-white text-xs px-3 py-1.5 rounded">+ Tambah</button></div>
+            <div id="expenseItemsContainer" class="space-y-2"></div>
+          </div>
+        </div>
+        <div class="flex justify-end gap-2">
+          <button type="button" id="btnBatalHarian" onclick="resetFormHarian()" class="hidden px-4 py-2 rounded border text-xs font-semibold">Batal</button>
+          <button type="submit" id="btnSimpanHarian" class="bg-slate-900 text-white px-5 py-2.5 rounded text-xs font-semibold">+ Simpan Transaksi Harian</button>
+        </div>
+      </form>
+    </div>
+    <div class="bg-white rounded-xl shadow-sm border overflow-hidden p-4">
+      <div class="flex justify-between items-center mb-3">
+        <h3 class="text-sm font-bold">BUKU KAS HARIAN</h3>
+        <select id="filterTampilanHarian" onchange="renderAll()" class="text-xs border rounded px-2 py-1 bg-white font-semibold"><option value="bulan_aktif">Bulan Terpilih</option><option value="semua">Semua Riwayat</option></select>
+      </div>
+      <table class="excel-table" id="table-harian">
+        <thead><tr><th class="w-12">no</th><th class="w-28">Tanggal</th><th class="w-56">Pemasukan</th><th class="w-64">Rp</th><th class="w-56">Pengeluaran</th><th class="w-64">Rp</th><th class="w-44">Total RP</th><th class="w-24 text-center no-export">Aksi</th></tr></thead>
+        <tbody id="tbody-harian"></tbody><tfoot id="tfoot-harian"></tfoot>
+      </table>
+    </div>
+  </main>
+  <footer class="bg-white border-t mt-10 py-4 text-center text-xs text-slate-500"><span id="statusPenyimpanan">Sistem Aktif</span></footer>
+
+  <!-- Pemuatan Berurutan 4 File JS Modular -->
+  <script src="state.js"></script>
+  <script src="cloud.js"></script>
+  <script src="renderers.js"></script>
+  <script src="handlers.js"></script>
+  <script>
+    function renderCurrentPage() {
+      renderLaporanHarian();
+    }
+    window.addEventListener('DOMContentLoaded', () => {
+      if (getEl('incomeItemsContainer') && !getEl('incomeItemsContainer').children.length) addIncomeItemRow();
+      if (getEl('expenseItemsContainer') && !getEl('expenseItemsContainer').children.length) addExpenseItemRow();
+      initSharedApp();
+    });
+  </script>
+</body>
+</html>

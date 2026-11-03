@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Laporan Bulanan - Ayam Geprek KING SALMAN</title>
+
+  <!-- External CDNs for Tailwind, PDF, and Excel -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+  <!-- Custom Shared Stylesheet -->
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body class="min-h-screen flex flex-col bg-slate-100 text-slate-900">
+
+  <!-- HEADER UTAMA -->
+  <header class="bg-slate-900 text-white shadow-lg border-b border-slate-800">
+    <div class="max-w-7xl mx-auto px-4 py-4 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+      <div class="flex items-center gap-2.5">
+        <span class="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-emerald-500 text-slate-950 font-bold text-lg shadow">Rp</span>
+        <div>
+          <h1 class="text-xl font-bold tracking-tight">Ayam Geprek KING SALMAN</h1>
+          <p class="text-xs text-slate-400 mt-0.5">Laporan & Rekapitulasi Bulanan</p>
+          <div class="flex flex-wrap items-center gap-2 mt-1.5">
+            <span id="liveCloudBadge" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">🟢 Cloud Real-Time</span>
+            <button type="button" onclick="forceCloudSync()" class="bg-emerald-600 hover:bg-emerald-500 text-white text-[11px] font-semibold px-2.5 py-1 rounded-full transition">🔄 Sinkron</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- TOOLBAR AKSI & EKSPOR -->
+      <div class="flex flex-wrap items-center gap-2">
+        <button type="button" onclick="exportDataFile()" class="bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold px-2.5 py-1.5 rounded transition">📥 Backup</button>
+        <label class="bg-indigo-700 hover:bg-indigo-600 text-white text-xs font-semibold px-2.5 py-1.5 rounded cursor-pointer transition">
+          📤 Restore
+          <input type="file" accept=".json" onchange="importDataFile(event)" class="hidden" />
+        </label>
+        <input type="month" id="filterBulanGlobal" onchange="handlePeriodChange()" class="bg-slate-800 border border-slate-700 text-white text-xs rounded px-2.5 py-1.5 cursor-pointer font-semibold" />
+        <button type="button" onclick="exportToPDF('table-bulanan', 'Bulanan')" class="bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold px-3 py-1.5 rounded shadow transition">PDF</button>
+        <button type="button" onclick="exportToWord('table-bulanan', 'Bulanan')" class="bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold px-3 py-1.5 rounded shadow transition">Word</button>
+        <button type="button" onclick="exportToExcel('table-bulanan', 'Bulanan')" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold px-3 py-1.5 rounded shadow transition">Excel</button>
+      </div>
+    </div>
+
+    <!-- MENU NAVIGASI ANTAR HALAMAN -->
+    <div class="max-w-7xl mx-auto px-4 pt-2 flex gap-1 border-t border-slate-800 overflow-x-auto">
+      <a href="index.html" class="nav-link px-4 py-2.5 text-xs font-semibold rounded-t-lg text-slate-300 hover:text-white hover:bg-slate-800 transition">📊 Dashboard</a>
+      <a href="modal.html" class="nav-link px-4 py-2.5 text-xs font-semibold rounded-t-lg text-slate-300 hover:text-white hover:bg-slate-800 transition">💼 Sheet Modal</a>
+      <a href="harian.html" class="nav-link px-4 py-2.5 text-xs font-semibold rounded-t-lg text-slate-300 hover:text-white hover:bg-slate-800 transition">📅 Laporan Harian</a>
+      <a href="mingguan.html" class="nav-link px-4 py-2.5 text-xs font-semibold rounded-t-lg text-slate-300 hover:text-white hover:bg-slate-800 transition">📆 Laporan Mingguan</a>
+      <a href="bulanan.html" class="nav-link active px-4 py-2.5 text-xs font-semibold rounded-t-lg">📈 Laporan Bulanan</a>
+    </div>
+  </header>
+
+  <!-- KONTEN UTAMA -->
+  <main class="max-w-7xl w-full mx-auto px-4 py-6 flex-1 space-y-6">
+
+    <!-- FORM INPUT CEPAT BULANAN -->
+    <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200">
+      <h2 class="text-base font-bold text-slate-800 mb-1">Input Cepat Transaksi Bulanan</h2>
+      <p class="text-xs text-slate-500 mb-3">Format: <code>Nama Barang (Qty x HargaSatuan)</code> dipisahkan koma.</p>
+      <form onsubmit="handleQuickAddFromSheet(event, 'bulanan')" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-3">
+        <input type="date" id="bulananTanggal" required class="rounded-lg border border-slate-300 px-3 py-2 text-xs focus:ring-2 focus:ring-slate-900 focus:outline-none" />
+        <input type="text" id="bulananPemasukanText" placeholder="Contoh: Paket Geprek (30 x 15000)" class="rounded-lg border border-emerald-300 px-3 py-2 text-xs lg:col-span-2 focus:ring-2 focus:ring-emerald-500 focus:outline-none" />
+        <input type="text" id="bulananPengeluaranText" placeholder="Contoh: Gas (2 x 22000)" class="rounded-lg border border-rose-300 px-3 py-2 text-xs focus:ring-2 focus:ring-rose-500 focus:outline-none" />
+        <button type="submit" class="bg-slate-900 hover:bg-slate-800 text-white px-4 py-2 rounded-lg text-xs font-semibold shadow transition">+ Tambah Cepat</button>
+      </form>
+    </div>
+
+    <!-- KARTU STATISTIK RINGKASAN BULANAN -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+      <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+        <span class="text-xs text-slate-500 font-semibold uppercase">1. Total Pemasukan</span>
+        <p id="bulananCardMasuk" class="text-lg font-bold text-emerald-600 mt-1">Rp 0</p>
+      </div>
+      <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+        <span class="text-xs text-slate-500 font-semibold uppercase">2. Total Pengeluaran</span>
+        <p id="bulananCardKeluar" class="text-lg font-bold text-rose-600 mt-1">Rp 0</p>
+      </div>
+      <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+        <span class="text-xs text-slate-500 font-semibold uppercase">3. Modal Berjalan</span>
+        <p id="bulananCardModal" class="text-lg font-bold text-slate-800 mt-1">Rp 0</p>
+      </div>
+      <div class="bg-slate-900 text-white p-4 rounded-xl border border-slate-800 shadow-sm">
+        <span class="text-xs text-slate-300 font-semibold uppercase">4. Total Bersih</span>
+        <p id="bulananCardBersih" class="text-lg font-bold text-emerald-400 mt-1">Rp 0</p>
+      </div>
+    </div>
+
+    <!-- TABEL LAPORAN BULANAN -->
+    <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+      <div class="px-5 py-4 border-b flex justify-between items-center gap-2">
+        <h3 class="text-base font-bold text-slate-800">Tabel Laporan Bulanan Terintegrasi</h3>
+        <select id="modeBulanan" onchange="renderAll()" class="text-xs border border-slate-300 rounded-lg px-2.5 py-1.5 bg-white font-semibold cursor-pointer">
+          <option value="detail_bulan_ini">Rincian Bulan Ini</option>
+          <option value="rekap_antar_bulan">Rekap Multi-Bulan</option>
+        </select>
+      </div>
+      <div class="overflow-x-auto p-4">
+        <table class="excel-table" id="table-bulanan">
+          <thead>
+            <tr>
+              <th class="w-12">no</th>
+              <th class="w-32">Tanggal</th>
+              <th class="w-56">Pemasukan</th>
+              <th class="w-64">Rp</th>
+              <th class="w-56">Pengeluaran</th>
+              <th class="w-64">Rp</th>
+              <th class="w-44">Total RP</th>
+              <th class="w-24 text-center no-export">Aksi</th>
+            </tr>
+          </thead>
+          <tbody id="tbody-bulanan"></tbody>
+          <tfoot id="tfoot-bulanan"></tfoot>
+        </table>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="bg-white border-t mt-10 py-4 text-center text-xs text-slate-500">
+    <span id="statusPenyimpanan">Sistem Aktif &bull; Data Terhubung Real-Time</span>
+  </footer>
+
+  <!-- PEMUATAN SKRIP MODULAR SECARA BERURUTAN -->
+  <script src="state.js"></script>
+  <script src="cloud.js"></script>
+  <script src="renderers.js"></script>
+  <script src="handlers.js"></script>
+  <script>
+    function renderCurrentPage() {
+      renderLaporanBulanan();
+    }
+    window.addEventListener('DOMContentLoaded', initSharedApp);
+  </script>
+</body>
+</html>

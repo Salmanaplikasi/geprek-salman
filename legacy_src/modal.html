@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sheet Modal - Ayam Geprek KING SALMAN</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body class="min-h-screen flex flex-col bg-slate-100 text-slate-900">
+  <header class="bg-slate-900 text-white shadow-lg border-b border-slate-800">
+    <div class="max-w-7xl mx-auto px-4 py-4 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+      <div class="flex items-center gap-2.5">
+        <span class="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-emerald-500 text-slate-950 font-bold text-lg shadow">Rp</span>
+        <div>
+          <h1 class="text-xl font-bold tracking-tight">Ayam Geprek KING SALMAN</h1>
+          <p class="text-xs text-slate-400 mt-0.5">Manajemen Modal & Investasi Usaha</p>
+          <div class="flex flex-wrap items-center gap-2 mt-1.5">
+            <span id="liveCloudBadge" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">🟢 Cloud Real-Time</span>
+            <button type="button" onclick="forceCloudSync()" class="bg-emerald-600 hover:bg-emerald-500 text-white text-[11px] font-semibold px-2.5 py-1 rounded-full">🔄 Sinkron</button>
+          </div>
+        </div>
+      </div>
+      <div class="flex flex-wrap items-center gap-2">
+        <button type="button" onclick="exportDataFile()" class="bg-indigo-600 text-white text-xs font-semibold px-2.5 py-1.5 rounded">📥 Backup</button>
+        <label class="bg-indigo-700 text-white text-xs font-semibold px-2.5 py-1.5 rounded cursor-pointer">📤 Restore<input type="file" accept=".json" onchange="importDataFile(event)" class="hidden" /></label>
+        <input type="month" id="filterBulanGlobal" onchange="handlePeriodChange()" class="bg-slate-800 border border-slate-700 text-white text-xs rounded px-2 py-1.5" />
+        <button type="button" onclick="exportToPDF('table-modal', 'Modal')" class="bg-rose-600 text-white text-xs px-2.5 py-1.5 rounded">PDF</button>
+        <button type="button" onclick="exportToWord('table-modal', 'Modal')" class="bg-blue-600 text-white text-xs px-2.5 py-1.5 rounded">Word</button>
+        <button type="button" onclick="exportToExcel('table-modal', 'Modal')" class="bg-emerald-600 text-white text-xs px-2.5 py-1.5 rounded">Excel</button>
+      </div>
+    </div>
+    <div class="max-w-7xl mx-auto px-4 pt-2 flex gap-1 border-t border-slate-800 overflow-x-auto">
+      <a href="index.html" class="nav-link px-4 py-2.5 text-xs font-semibold rounded-t-lg text-slate-300">📊 Dashboard</a>
+      <a href="modal.html" class="nav-link active px-4 py-2.5 text-xs font-semibold rounded-t-lg">💼 Sheet Modal</a>
+      <a href="harian.html" class="nav-link px-4 py-2.5 text-xs font-semibold rounded-t-lg text-slate-300">📅 Laporan Harian</a>
+      <a href="mingguan.html" class="nav-link px-4 py-2.5 text-xs font-semibold rounded-t-lg text-slate-300">📆 Laporan Mingguan</a>
+      <a href="bulanan.html" class="nav-link px-4 py-2.5 text-xs font-semibold rounded-t-lg text-slate-300">📈 Laporan Bulanan</a>
+    </div>
+  </header>
+
+  <main class="max-w-7xl w-full mx-auto px-4 py-6 flex-1 space-y-6">
+    <div class="bg-white p-5 rounded-xl shadow-sm border">
+      <h2 id="formModalTitle" class="text-base font-bold text-slate-800 mb-1">Tambah Catatan Modal Usaha</h2>
+      <form id="formModal" onsubmit="handleSaveModal(event)" class="space-y-4">
+        <input type="hidden" id="modalEditId" value="" />
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div><label class="block text-xs font-semibold mb-1">Tanggal</label><input type="date" id="modalTanggal" required class="w-full rounded border px-3 py-2 text-sm" /></div>
+          <div><label class="block text-xs font-semibold mb-1">Kategori Modal</label><select id="modalKategori" required class="w-full rounded border px-3 py-2 text-sm"><option value="Modal Awal">Modal Awal</option><option value="Tambahan Investasi">Tambahan Investasi</option><option value="Modal Berjalan">Modal Berjalan</option></select></div>
+          <div class="bg-slate-50 p-3 rounded border flex flex-col justify-center"><span class="text-[11px] font-semibold text-slate-500 uppercase">Total Nominal:</span><span id="previewTotalModalForm" class="text-lg font-bold">Rp 0</span></div>
+        </div>
+        <div class="p-4 rounded-xl bg-slate-50 border space-y-3">
+          <div class="flex justify-between items-center"><label class="text-xs font-bold">Rincian Barang Modal</label><button type="button" onclick="addModalItemRow()" class="text-xs font-semibold bg-slate-900 text-white px-3 py-1.5 rounded">+ Tambah Baris</button></div>
+          <div id="modalItemsContainer" class="space-y-2"></div>
+        </div>
+        <div class="flex justify-end gap-2">
+          <button type="button" id="btnBatalModal" onclick="resetFormModal()" class="hidden px-4 py-2 rounded border text-xs font-semibold">Batal</button>
+          <button type="submit" id="btnSimpanModal" class="bg-slate-900 text-white px-5 py-2 rounded text-xs font-semibold">+ Simpan Modal</button>
+        </div>
+      </form>
+    </div>
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div class="bg-white p-4 rounded-xl border"><span class="text-xs text-slate-500 font-semibold">Total Modal Awal</span><p id="cardModalAwal" class="text-xl font-bold mt-1">Rp 0</p></div>
+      <div class="bg-white p-4 rounded-xl border"><span class="text-xs text-slate-500 font-semibold">Total Tambahan Investasi</span><p id="cardModalInvestasi" class="text-xl font-bold text-emerald-600 mt-1">Rp 0</p></div>
+      <div class="bg-white p-4 rounded-xl border"><span class="text-xs text-slate-500 font-semibold">Total Modal Berjalan</span><p id="cardModalBerjalan" class="text-xl font-bold text-rose-600 mt-1">Rp 0</p></div>
+    </div>
+    <div class="bg-white rounded-xl shadow-sm border overflow-hidden p-4">
+      <h3 class="text-sm font-bold mb-3">RIWAYAT SHEET MODAL</h3>
+      <table class="excel-table" id="table-modal">
+        <thead><tr><th class="w-12">no</th><th class="w-28">Tanggal</th><th class="w-56">Pemasukan</th><th class="w-64">Rp</th><th class="w-56">Pengeluaran</th><th class="w-64">Rp</th><th class="w-44">Total RP</th><th class="w-24 text-center no-export">Aksi</th></tr></thead>
+        <tbody id="tbody-modal"></tbody><tfoot id="tfoot-modal"></tfoot>
+      </table>
+    </div>
+  </main>
+  <footer class="bg-white border-t mt-10 py-4 text-center text-xs text-slate-500"><span id="statusPenyimpanan">Sistem Aktif</span></footer>
+
+  <!-- Pemuatan Berurutan 4 File JS Modular -->
+  <script src="state.js"></script>
+  <script src="cloud.js"></script>
+  <script src="renderers.js"></script>
+  <script src="handlers.js"></script>
+  <script>
+    function renderCurrentPage() {
+      renderSheetModal();
+    }
+    window.addEventListener('DOMContentLoaded', () => {
+      if (getEl('modalItemsContainer') && !getEl('modalItemsContainer').children.length) addModalItemRow();
+      initSharedApp();
+    });
+  </script>
+</body>
+</html>

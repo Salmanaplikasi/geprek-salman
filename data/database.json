@@ -1,0 +1,122 @@
+{
+  "selectedMonth": "2026-11",
+  "updatedAt": 1793692521702,
+  "version": 3,
+  "transactions": [
+    {
+      "id": "TX-101",
+      "tanggal": "2026-11-02",
+      "pemasukanItems": [
+        {
+          "nama": "Paket Ayam Geprek",
+          "qty": 30,
+          "satuan": "Porsi",
+          "harga": 15000
+        },
+        {
+          "nama": "Es Teh Manis",
+          "qty": 25,
+          "satuan": "Cup",
+          "harga": 5000
+        }
+      ],
+      "pemasukanText": "Paket Ayam Geprek (30 Porsi), Es Teh Manis (25 Cup)",
+      "pemasukanRp": 575000,
+      "pengeluaranItems": [
+        {
+          "nama": "Beli Es Batu",
+          "qty": 2,
+          "satuan": "Box",
+          "harga": 25000
+        }
+      ],
+      "pengeluaranText": "Beli Es Batu (2 Box)",
+      "pengeluaranRp": 50000
+    },
+    {
+      "id": "TX-1793685874109",
+      "tanggal": "2026-11-03",
+      "pemasukanItems": [
+        {
+          "nama": "Paket Sambal Bawang",
+          "qty": 20,
+          "satuan": "Porsi",
+          "harga": 18000
+        }
+      ],
+      "pemasukanText": "Paket Sambal Bawang (20 Porsi)",
+      "pemasukanRp": 360000,
+      "pengeluaranItems": [
+        {
+          "nama": "Minyak Goreng Sawit",
+          "qty": 5,
+          "satuan": "Pack",
+          "harga": 17000
+        }
+      ],
+      "pengeluaranText": "Minyak Goreng Sawit (5 Pack)",
+      "pengeluaranRp": 85000
+    },
+    {
+      "id": "TX-1793692521685",
+      "tanggal": "2026-11-03",
+      "pemasukanItems": [
+        {
+          "nama": "Paket Ayam Bakar Madu",
+          "qty": 15,
+          "satuan": "Porsi",
+          "harga": 20000
+        }
+      ],
+      "pemasukanText": "Paket Ayam Bakar Madu (15 Porsi)",
+      "pemasukanRp": 300000,
+      "pengeluaranItems": [],
+      "pengeluaranText": "-",
+      "pengeluaranRp": 0
+    }
+  ],
+  "modals": [
+    {
+      "id": "MDL-101",
+      "tanggal": "2026-10-01",
+      "kategori": "Modal Awal",
+      "items": [
+        {
+          "nama": "Kompor & Peralatan Masak",
+          "qty": 1,
+          "satuan": "Paket",
+          "harga": 3000000
+        },
+        {
+          "nama": "Kas Operasional Awal",
+          "qty": 1,
+          "satuan": "Paket",
+          "harga": 2000000
+        }
+      ],
+      "keterangan": "Kompor & Peralatan Masak (1 Paket), Kas Operasional Awal (1 Paket)",
+      "nominal": 5000000
+    },
+    {
+      "id": "MDL-102",
+      "tanggal": "2026-11-02",
+      "kategori": "Modal Berjalan",
+      "items": [
+        {
+          "nama": "Beras Premium 25Kg",
+          "qty": 1,
+          "satuan": "Karung",
+          "harga": 350000
+        },
+        {
+          "nama": "Minyak Goreng",
+          "qty": 10,
+          "satuan": "Liter",
+          "harga": 17500
+        }
+      ],
+      "keterangan": "Beras Premium 25Kg (1 Karung), Minyak Goreng (10 Liter)",
+      "nominal": 525000
+    }
+  ]
+}

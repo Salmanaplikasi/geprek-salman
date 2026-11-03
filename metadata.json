@@ -1,0 +1,8 @@
+{
+  "name": "Ayam Geprek KING SALMAN - Sistem Keuangan & Kas Online",
+  "description": "Aplikasi manajemen kas, sheet modal, laporan keuangan harian, mingguan, dan bulanan Ayam Geprek KING SALMAN dengan sinkronisasi online multi-perangkat real-time.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
